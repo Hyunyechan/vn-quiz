@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VN QUIZ — Visual Novel Guess</title><link rel="stylesheet" href="style.css"></head>
+<body><div class="page">
+<header class="topbar"><div><div class="logo">VN QUIZ</div><div class="logo-sub">VISUAL NOVEL GUESS</div></div><button id="newGame" class="new-game">↻ 새 문제</button></header>
+<main>
+<section class="hero"><div class="eyebrow">VNDB QUIZ</div><h1>이 비주얼노벨은<br><span>무엇일까요?</span></h1><p>원하는 힌트만 골라 공개하고, 정답은 언제든 제출할 수 있습니다.</p></section>
+<section class="modebar"><div class="mode-title">QUIZ MODE</div><div class="mode-row">
+<button class="mode-btn active" data-mode="all">전체 랜덤</button><button class="mode-btn" data-mode="popular">인기작 위주</button><button class="mode-btn" data-mode="year">연도별</button>
+<select id="yearSelect" class="year-select"><option value="all">전체 연도</option></select></div></section>
+<section class="scorebar"><div class="scorebox"><span>힌트 스택</span><strong id="stack">0</strong></div><div class="scorebox"><span>현재 등급</span><strong id="grade">고수</strong></div><div class="scorebox"><span>획득 가능 점수</span><strong id="score">1000</strong></div><div class="scorebox"><span>퀴즈 데이터</span><strong id="datasetCount">0</strong></div></section>
+<section class="quiz-card"><div id="result" class="result hidden"></div>
+<div class="hint-grid">
+<article class="hint-card"><div class="hint-title"><span>🏢</span> 제작 브랜드</div><div id="developer" class="hint-content unknown">?</div><button class="hint-button" data-hint="developer">힌트 공개 <b>+1</b></button></article>
+<article class="hint-card"><div class="hint-title"><span>📅</span> 최초 발매일</div><div id="released" class="hint-content unknown">?</div><button class="hint-button" data-hint="released">힌트 공개 <b>+1</b></button></article>
+<article class="hint-card"><div class="hint-title"><span>🎭</span> 장르</div><div id="genres" class="hint-content unknown">?</div><button id="genreButton" class="hint-button" data-hint="genres">힌트 공개 <b>+1</b></button></article>
+<article class="hint-card"><div class="hint-title"><span>👤</span> 제작진</div><div class="staff-buttons"><button data-staff="scenario">시나리오 <b>+1</b></button><button data-staff="artist">원화가 <b>+1</b></button></div><div id="staff" class="hint-content staff-content unknown">?</div></article>
+<article class="hint-card"><div class="hint-title"><span>🎵</span> OP</div><div id="op" class="hint-content unknown">?</div><button class="hint-button" data-hint="op">힌트 공개 <b>+1</b></button></article>
+<article class="hint-card"><div class="hint-title"><span>🎵</span> ED</div><div id="ed" class="hint-content unknown">?</div><button class="hint-button" data-hint="ed">힌트 공개 <b>+1</b></button></article>
+<article class="hint-card wide-card"><div class="hint-title"><span>🖼️</span> 인게임 CG <small>sexual &lt; 0.5 / violence &lt; 1.5</small></div><div id="cg" class="cg-area"><div class="cg-empty">CG를 공개하면 이미지가 표시됩니다.</div></div><button class="hint-button" data-hint="cg">CG 공개 <b>+1</b></button></article>
+</div>
+<div class="answer-area"><div class="answer-label">정답</div><div class="autocomplete"><input id="answer" type="text" placeholder="작품명을 입력하세요" autocomplete="off"><div id="suggestions" class="suggestions hidden"></div></div><button id="submit" class="submit-button">정답 확인</button><button id="giveUp" class="giveup-button">🏳️ 정답 보기</button><div id="message" class="message"></div></div>
+</section>
+<section class="rule-row"><div><b>힌트 공개</b> +1</div><div><b>오답</b> +1</div><div><b>정답</b> +0</div><div><b>0~3</b> 고수</div><div><b>4~6</b> 중수</div><div><b>7+</b> 하수</div></section>
+<div class="dataset-note">현재 파일은 실행 검증용 seed 데이터입니다. 실제 VNDB 데이터는 포함된 수집기로 생성합니다.</div>
+</main><footer>VN QUIZ · VNDB-derived personal project</footer></div>
+<script src="quiz-data.js"></script><script src="app.js"></script></body></html>
