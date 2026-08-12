@@ -8,7 +8,10 @@
 <section class="modebar"><div class="mode-title">QUIZ MODE</div><div class="mode-row">
 <button class="mode-btn active" data-mode="all">전체 랜덤</button><button class="mode-btn" data-mode="popular">인기작 위주</button><button class="mode-btn" data-mode="year">연도별</button>
 <select id="yearSelect" class="year-select"><option value="all">전체 연도</option></select></div></section>
-<section class="scorebar"><div class="scorebox"><span>힌트 스택</span><strong id="stack">0</strong></div><div class="scorebox"><span>현재 등급</span><strong id="grade">고수</strong></div><div class="scorebox"><span>획득 가능 점수</span><strong id="score">1000</strong></div><div class="scorebox"><span>퀴즈 데이터</span><strong id="datasetCount">0</strong></div></section>
+<section class="scorebar"><div class="scorebox"><span>힌트 스택</span><strong id="stack">0</strong></div><div class="scorebox"><span>현재 등급</span><strong id="grade">고수</strong></div><div class="scorebox">
+  <span>누적 점수</span>
+  <strong id="score">0</strong>
+</div><div class="scorebox"><span>퀴즈 데이터</span><strong id="datasetCount">0</strong></div></section>
 <section class="quiz-card"><div id="result" class="result hidden"></div>
 <div class="hint-grid">
 <article class="hint-card"><div class="hint-title"><span>🏢</span> 제작 브랜드</div><div id="developer" class="hint-content unknown">?</div><button class="hint-button" data-hint="developer">힌트 공개 <b>+1</b></button></article>
