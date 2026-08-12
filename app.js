@@ -400,17 +400,15 @@ function showText(id,text){
 
 
 /* =========================================================
-   OP / ED 표시
+   VOCAL / 노래 제목 표시
 ========================================================= */
+function firstVocal(x){
 
-function song(x){
+  if(Array.isArray(x)){
+    return x.find(v=>String(v||"").trim()) || "";
+  }
 
-  return x &&
-    (x.artist||x.title)
-
-    ? `${x.artist||"미상"} — ${x.title||"미상"}`
-
-    : "✕ 확인 불가";
+  return String(x||"").trim();
 }
 
 
@@ -496,22 +494,22 @@ function reveal(type){
   }
 
 
-  // OP
-  if(type==="op"){
+  // VOCAL
+  if(type==="vocal"){
 
     showText(
       "#op",
-      song(current.op)
+      firstVocal(current.vocal) || "✕ 확인 불가"
     );
   }
 
 
-  // ED
-  if(type==="ed"){
+  // 노래 제목
+  if(type==="song"){
 
     showText(
       "#ed",
-      song(current.ed)
+      String(current.song||"").trim() || "✕ 확인 불가"
     );
   }
 }
