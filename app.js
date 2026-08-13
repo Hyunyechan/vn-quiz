@@ -232,6 +232,8 @@ function showNoQuestionsMessage(){
 
 function newGame(){
 
+  // 새 문제 시작 시 이전 문제의 정답 확정 상태 초기화
+  questionResolved=false;
   const p=pool();
 
 
