@@ -15,6 +15,16 @@ let usedQuestionIds=new Set();
 // 현재 세션 누적 점수
 let totalScore=0;
 
+// 현재 세션에서 정답까지 확인한 문제
+let resolvedQuestionIds=new Set();
+
+// 현재 플레이어 닉네임
+let playerNickname="";
+
+// 로컬 랭킹 저장 키
+const RANKING_KEY="vnQuizLocalRankingV1";
+const NICKNAME_KEY="vnQuizLastNicknameV1";
+
 // 정답 확정 후에도 미공개 힌트를 확인할 수 있도록 하는 상태
 let questionResolved=false;
 
@@ -37,7 +47,9 @@ function init(){
 
   bind();
 
-  newGame();
+  stats();
+
+  openNicknameModal();
 }
 
 
@@ -163,6 +175,263 @@ function stats(){
 
   $("#score").textContent=
     totalScore.toLocaleString();
+
+  const progressed=resolvedQuestionIds.size;
+  const remaining=Math.max(0,games.length-progressed);
+
+  if($("#progressCount")){
+    $("#progressCount").textContent=
+      progressed.toLocaleString();
+  }
+
+  if($("#remainingCount")){
+    $("#remainingCount").textContent=
+      remaining.toLocaleString();
+  }
+
+  if($("#playerName")){
+    $("#playerName").textContent=
+      playerNickname || "-";
+  }
+}
+
+
+/* =========================================================
+   닉네임 / 로컬 랭킹
+========================================================= */
+
+function safeLocalGet(key){
+  try{
+    return localStorage.getItem(key);
+  }
+  catch(e){
+    return null;
+  }
+}
+
+function safeLocalSet(key,value){
+  try{
+    localStorage.setItem(key,value);
+    return true;
+  }
+  catch(e){
+    return false;
+  }
+}
+
+function loadRankings(){
+  try{
+    const raw=safeLocalGet(RANKING_KEY);
+    const list=raw ? JSON.parse(raw) : [];
+
+    if(!Array.isArray(list)){
+      return [];
+    }
+
+    return list
+      .filter(
+        x=>
+          x &&
+          String(x.nickname||"").trim() &&
+          Number.isFinite(Number(x.score))
+      )
+      .map(
+        x=>({
+          nickname:String(x.nickname).trim(),
+          score:Math.max(0,Number(x.score)||0),
+          updatedAt:Number(x.updatedAt)||0
+        })
+      )
+      .sort(
+        (a,b)=>
+          b.score-a.score ||
+          a.updatedAt-b.updatedAt
+      )
+      .slice(0,10);
+  }
+  catch(e){
+    return [];
+  }
+}
+
+function saveRankings(list){
+  safeLocalSet(
+    RANKING_KEY,
+    JSON.stringify(
+      list
+        .sort(
+          (a,b)=>
+            b.score-a.score ||
+            a.updatedAt-b.updatedAt
+        )
+        .slice(0,10)
+    )
+  );
+}
+
+function updateRanking(){
+  if(!playerNickname){
+    return;
+  }
+
+  const list=loadRankings();
+  const key=norm(playerNickname);
+
+  const found=
+    list.find(
+      x=>norm(x.nickname)===key
+    );
+
+  if(found){
+    // 같은 닉네임은 최고점수만 보존
+    if(totalScore>found.score){
+      found.score=totalScore;
+      found.nickname=playerNickname;
+      found.updatedAt=Date.now();
+    }
+  }
+  else{
+    list.push({
+      nickname:playerNickname,
+      score:totalScore,
+      updatedAt:Date.now()
+    });
+  }
+
+  saveRankings(list);
+}
+
+function renderRanking(){
+  const body=$("#rankingBody");
+
+  if(!body){
+    return;
+  }
+
+  const list=loadRankings();
+
+  if(!list.length){
+    body.innerHTML=
+      '<div class="ranking-empty">'+
+      '아직 저장된 랭킹 기록이 없습니다.'+
+      '</div>';
+    return;
+  }
+
+  body.innerHTML=
+    list
+      .map(
+        (row,index)=>{
+          const rank=index+1;
+          const isMe=
+            playerNickname &&
+            norm(row.nickname)===norm(playerNickname);
+
+          return (
+            `<div class="ranking-row${isMe?" me":""}">`+
+              `<div class="ranking-rank">${rank}</div>`+
+              `<div class="ranking-name">${esc(row.nickname)}</div>`+
+              `<div class="ranking-score">${row.score.toLocaleString()}점</div>`+
+            `</div>`
+          );
+        }
+      )
+      .join("");
+}
+
+function openRankingModal(){
+  renderRanking();
+  $("#rankingModal")
+    ?.classList
+    .remove("hidden");
+}
+
+function closeRankingModal(){
+  $("#rankingModal")
+    ?.classList
+    .add("hidden");
+}
+
+function openNicknameModal(){
+  const saved=
+    String(
+      safeLocalGet(NICKNAME_KEY) || ""
+    ).trim();
+
+  const input=$("#nicknameInput");
+
+  if(input){
+    input.value=saved;
+  }
+
+  $("#nicknameError").textContent="";
+
+  $("#nicknameModal")
+    ?.classList
+    .remove("hidden");
+
+  setTimeout(
+    ()=>input?.focus(),
+    0
+  );
+}
+
+function startWithNickname(){
+  const input=$("#nicknameInput");
+  const nickname=
+    String(input?.value||"")
+      .trim()
+      .replace(/\s+/g," ");
+
+  if(!nickname){
+    $("#nicknameError").textContent=
+      "닉네임을 입력해주세요.";
+    input?.focus();
+    return;
+  }
+
+  if(nickname.length>16){
+    $("#nicknameError").textContent=
+      "닉네임은 16자 이하로 입력해주세요.";
+    input?.focus();
+    return;
+  }
+
+  playerNickname=nickname;
+
+  safeLocalSet(
+    NICKNAME_KEY,
+    playerNickname
+  );
+
+  $("#nicknameModal")
+    ?.classList
+    .add("hidden");
+
+  stats();
+
+  // 페이지 진입 후 최초 1회만 문제 시작
+  if(!current){
+    newGame();
+  }
+}
+
+function markCurrentResolved(){
+  if(!current){
+    return;
+  }
+
+  if(
+    !resolvedQuestionIds.has(
+      current.id
+    )
+  ){
+    resolvedQuestionIds.add(
+      current.id
+    );
+  }
+
+  stats();
 }
 
 
@@ -1003,6 +1272,9 @@ function giveUp(){
     // 정답 확정 후에도 미공개 힌트는 확인 가능
     questionResolved=true;
 
+  // 정답을 확인했으므로 진행 문제로 1회 카운트
+  markCurrentResolved();
+
 
   $("#submit").disabled=true;
 
@@ -1065,6 +1337,14 @@ function submit(){
     // 누적 점수에 추가
     totalScore+=
       earnedScore;
+
+    questionResolved=true;
+
+    // 정답을 맞혔으므로 진행 문제로 1회 카운트
+    markCurrentResolved();
+
+    // 현재 닉네임의 최고 누적점수 갱신
+    updateRanking();
 
 
     // 화면 갱신
@@ -1261,6 +1541,39 @@ function bind(){
   // 새 문제
   $("#newGame").onclick=
     ()=>newGame(true);
+
+
+  // 상단 랭킹 버튼
+  $("#rankingButton").onclick=
+    openRankingModal;
+
+  // 랭킹 팝업 닫기
+  $("#rankingClose").onclick=
+    closeRankingModal;
+
+  $("#rankingModal")
+    .addEventListener(
+      "click",
+      e=>{
+        if(e.target.id==="rankingModal"){
+          closeRankingModal();
+        }
+      }
+    );
+
+  // 닉네임 입력 후 시작
+  $("#nicknameStart").onclick=
+    startWithNickname;
+
+  $("#nicknameInput")
+    .addEventListener(
+      "keydown",
+      e=>{
+        if(e.key==="Enter"){
+          startWithNickname();
+        }
+      }
+    );
 }
 
 
