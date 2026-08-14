@@ -230,7 +230,7 @@ function showNoQuestionsMessage(){
    새 문제
 ========================================================= */
 
-function newGame(){
+function newGame(scrollToQuestion=false){
 
   // 새 문제 시작 시 이전 문제의 정답 확정 상태 초기화
   questionResolved=false;
@@ -360,6 +360,13 @@ function newGame(){
 
   // 누적 점수는 절대 초기화하지 않음
   stats();
+
+  if(scrollToQuestion){
+    document.querySelector(".quiz-card")?.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+  }
 }
 
 
@@ -937,6 +944,29 @@ function suggest(q){
 
 
 /* =========================================================
+   정답 대표 이미지
+========================================================= */
+
+function resultCoverHtml(game){
+  const cover=String((game&&game.cover)||"").trim();
+
+  if(!cover){
+    return "";
+  }
+
+  return (
+    `<div class="answer-cover-wrap">`+
+      `<img class="answer-cover" `+
+        `src="${esc(cover)}" `+
+        `alt="${esc(game.title||"대표 이미지")}" `+
+        `loading="lazy" `+
+        `onerror="this.parentElement.style.display='none'">`+
+    `</div>`
+  );
+}
+
+
+/* =========================================================
    정답 공개
 ========================================================= */
 
@@ -957,14 +987,17 @@ function giveUp(){
 
 
   $("#result").innerHTML=
-    `<b>🏳️ 정답 공개</b><br>`+
-    `<strong>${esc(
-      current.title
-    )}</strong><br>`+
-    `<small>`+
-    `이번 문제 획득 점수 0점 · `+
-    `누적 ${totalScore.toLocaleString()}점`+
-    `</small>`;
+    `<div class="answer-result-layout">`+
+      resultCoverHtml(current)+
+      `<div class="answer-result-copy">`+
+        `<b>🏳️ 정답 공개</b><br>`+
+        `<strong>${esc(current.title)}</strong><br>`+
+        `<small>`+
+        `이번 문제 획득 점수 0점 · `+
+        `누적 ${totalScore.toLocaleString()}점`+
+        `</small>`+
+      `</div>`+
+    `</div>`;
 
 
     // 정답 확정 후에도 미공개 힌트는 확인 가능
@@ -1043,14 +1076,19 @@ function submit(){
 
 
     $("#result").innerHTML=
-      `<b>🎉 정답!</b><br>`+
-      `${esc(current.title)}<br>`+
-      `<small>`+
-      `힌트 스택 ${stack} · `+
-      `${grade()} · `+
-      `획득 ${earnedScore.toLocaleString()}점 · `+
-      `누적 ${totalScore.toLocaleString()}점`+
-      `</small>`;
+      `<div class="answer-result-layout">`+
+        resultCoverHtml(current)+
+        `<div class="answer-result-copy">`+
+          `<b>🎉 정답!</b><br>`+
+          `<strong>${esc(current.title)}</strong><br>`+
+          `<small>`+
+          `힌트 스택 ${stack} · `+
+          `${grade()} · `+
+          `획득 ${earnedScore.toLocaleString()}점 · `+
+          `누적 ${totalScore.toLocaleString()}점`+
+          `</small>`+
+        `</div>`+
+      `</div>`;
 
 
     $$("[data-hint],[data-staff]")
@@ -1222,7 +1260,7 @@ function bind(){
 
   // 새 문제
   $("#newGame").onclick=
-    newGame;
+    ()=>newGame(true);
 }
 
 
